@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %} · Buscar{% endblock %}
+{% block content %}
+<h1>🔎 Buscar películas</h1>
+
+<div class="panel">
+    <form method="get" action="{{ url_for('buscar') }}">
+        <input type="text" name="q" placeholder="Título de la película..." value="{{ q }}">
+        <button type="submit">Buscar</button>
+    </form>
+</div>
+
+{% if query %}
+<div class="panel">
+    <p class="muted">Consulta ejecutada:</p>
+    <pre>{{ query }}</pre>
+</div>
+{% endif %}
+
+{% if error %}
+<div class="panel">
+    <p class="error">Error SQL: {{ error }}</p>
+</div>
+{% endif %}
+
+{% if results is not none %}
+<div class="panel">
+    <h2>Resultados</h2>
+    {% if results|length == 0 %}
+        <p class="muted">Sin resultados.</p>
+    {% else %}
+    <table>
+        <tr><th>Título</th><th>Año</th><th>Género</th></tr>
+        {% for r in results %}
+        <tr><td>{{ r[0] }}</td><td>{{ r[1] }}</td><td>{{ r[2] }}</td></tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

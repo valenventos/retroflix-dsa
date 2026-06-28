@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %} · Reseñas{% endblock %}
+{% block content %}
+<h1>💬 Reseñas de la comunidad</h1>
+
+<div class="panel">
+    <h2>Dejá tu reseña</h2>
+    <form method="post" action="{{ url_for('reviews') }}">
+        <input type="text" name="movie" placeholder="Película" required>
+        <input type="text" name="author" placeholder="Tu nombre">
+        <textarea name="body" placeholder="¿Qué te pareció?" required></textarea>
+        <button type="submit">Publicar reseña</button>
+    </form>
+    <p class="muted">Las reseñas son revisadas por un administrador desde el
+        <a href="{{ url_for('admin') }}">panel de moderación</a>.</p>
+</div>
+
+<div class="panel">
+    <h2>Últimas reseñas</h2>
+    {% for r in reviews %}
+    <div class="review">
+        <div class="author">{{ r.author }} <span class="muted">sobre {{ r.movie }}</span></div>
+        {# !!! VULNERABLE: el cuerpo se renderiza sin escapar (Stored XSS) !!! #}
+        <div class="body">{{ r.body | safe }}</div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

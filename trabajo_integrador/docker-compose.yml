@@ -1,0 +1,12 @@
+services:
+  retroflix:
+    build: .
+    container_name: retroflix
+    ports:
+      - "5000:5000"
+    environment:
+      # Flags configurables (cambiar aquí para setear otras flags)
+      FLAG_SQLI: "FLAG{sql1_un10n_r3tr0fl1x_l34k}"
+      FLAG_XSS: "FLAG{st0r3d_xss_c00k13_st34l3r}"
+      FLAG_CRYPTO: "FLAG{b4s364_n0_3s_3ncr1pt4r}"
+    restart: unless-stopped

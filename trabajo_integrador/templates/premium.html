@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %} · Premium{% endblock %}
+{% block content %}
+<h1>⭐ RetroFlix Premium</h1>
+
+<div class="panel">
+    <p>Tu licencia actual:
+        {% if is_premium %}
+            <span class="badge warn">PREMIUM</span>
+        {% else %}
+            <span class="badge warn">GRATUITA</span>
+        {% endif %}
+    </p>
+
+    <p class="muted">Tu token de licencia (cookie <code>license</code>):</p>
+    <pre>{{ token }}</pre>
+
+    <p class="muted">Contenido de la licencia (lo que el servidor lee):</p>
+    <pre>{{ status }}</pre>
+</div>
+
+<div class="panel">
+    <h2>¿Cómo funciona la licencia?</h2>
+    <p class="muted">
+        Tu licencia viaja "protegida" en la cookie <code>license</code>. El
+        servidor la decodifica y lee el campo <code>premium</code> para saber si
+        tenés acceso al contenido exclusivo.
+    </p>
+    <p class="muted">Token de ejemplo de un usuario gratuito:</p>
+    <pre>{{ sample }}</pre>
+</div>
+
+{% if flag %}
+<div class="flag">🏆 ¡Licencia PREMIUM activada! → {{ flag }}</div>
+{% endif %}
+{% endblock %}

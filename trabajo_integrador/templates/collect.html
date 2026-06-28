@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %} · Collector{% endblock %}
+{% block content %}
+<h1>📡 Servidor del atacante (collector)</h1>
+<p class="muted">Las cookies exfiltradas vía XSS llegan a este endpoint
+    (<code>/collect?c=...</code>).</p>
+
+<div class="panel">
+    <h2>Datos capturados</h2>
+    <pre>{{ captured }}</pre>
+</div>
+
+{% if success %}
+<div class="flag">🏆 ¡XSS explotado! Cookie del admin robada → {{ flag }}</div>
+{% endif %}
+{% endblock %}

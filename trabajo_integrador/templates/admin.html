@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %} · Panel admin{% endblock %}
+{% block content %}
+<h1>🛡️ Panel de moderación (ADMIN)</h1>
+<p class="muted">
+    Estás viendo esta página como el <strong>administrador</strong> (la víctima).
+    Tu sesión tiene una cookie sensible. Al cargar las reseñas pendientes,
+    cualquier script almacenado en ellas se ejecuta en tu contexto.
+</p>
+
+<div class="panel">
+    <h2>Reseñas pendientes de moderación</h2>
+    {% for r in reviews %}
+    <div class="review">
+        <div class="author">{{ r.author }} <span class="muted">sobre {{ r.movie }}</span></div>
+        {# !!! VULNERABLE: mismo render crudo que en /reviews !!! #}
+        <div class="body">{{ r.body | safe }}</div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

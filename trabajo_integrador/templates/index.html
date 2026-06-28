@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>🎬 RetroFlix</h1>
+<p class="muted">Tu plataforma de cine clásico. Mirá los grandes éxitos de antes... si tenés Premium.</p>
+
+<div class="panel">
+    <h2>Catálogo</h2>
+    <div class="grid">
+        {% for m in movies %}
+        <div class="card">
+            <div class="title">{{ m.title }}</div>
+            <div class="meta">{{ m.year }} · {{ m.genre }}</div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="panel">
+    <p class="muted">¿Buscás algo en particular? Usá el <a href="{{ url_for('buscar') }}">buscador</a>,
+    dejá tu <a href="{{ url_for('reviews') }}">reseña</a> o activá tu cuenta
+    <a href="{{ url_for('premium') }}">Premium</a>.</p>
+</div>
+{% endblock %}
