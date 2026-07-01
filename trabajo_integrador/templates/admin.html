@@ -9,8 +9,7 @@
     {% for r in reviews %}
     <div class="review">
         <div class="author">{{ r.author }} <span class="muted">sobre {{ r.movie }}</span></div>
-        {# !!! VULNERABLE: mismo render crudo que en /reviews !!! #}
-        <div class="body">{{ r.body | safe }}</div>
+        <div class="body">{{ r.body }}</div>
     </div>
     {% endfor %}
 </div>

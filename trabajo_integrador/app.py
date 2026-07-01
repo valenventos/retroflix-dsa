@@ -1,16 +1,13 @@
 """
-RetroFlix - Aplicacion web vulnerable (Trabajo Integrador DSA 2026)
-====================================================================
+RetroFlix - Aplicacion web (version corregida) (Trabajo Integrador DSA 2026)
+=============================================================================
 
-ADVERTENCIA: Esta aplicacion es INTENCIONALMENTE VULNERABLE con fines
-educativos (CTF de la catedra). NO desplegar en produccion.
+Version con las 3 vulnerabilidades OWASP Top 10 corregidas:
+  - /buscar   -> SQL Injection corregido con query parametrizada
+  - /reviews  -> Stored XSS corregido (Jinja2 auto-escape, cookie httponly)
+  - /premium  -> Crypto failure corregido con token HMAC-SHA256
 
-Vulnerabilidades (una por vista, OWASP Top 10):
-  - /buscar   -> A03:2021 Injection        -> SQL Injection
-  - /reviews  -> A03:2021 Injection (XSS)  -> Stored Cross-Site Scripting
-  - /premium  -> A02:2021 Crypto Failures  -> Licencia "cifrada" que es solo base64
-
-La aplicacion NO contiene RCE ni vulnerabilidades que comprometan el servidor.
+La rama original (main) conserva la version vulnerable.
 """
 
 import os
@@ -18,6 +15,8 @@ import sqlite3
 import base64
 import json
 import tempfile
+import hashlib
+import hmac
 from flask import (
     Flask, request, redirect, url_for, make_response, render_template, g
 )
@@ -28,6 +27,8 @@ from flask import (
 FLAG_SQLI   = os.environ.get("FLAG_SQLI",   "FLAG{sql1_un10n_r3tr0fl1x_l34k}")
 FLAG_XSS    = os.environ.get("FLAG_XSS",    "FLAG{st0r3d_xss_c00k13_st34l3r}")
 FLAG_CRYPTO = os.environ.get("FLAG_CRYPTO", "FLAG{b4s364_n0_3s_3ncr1pt4r}")
+
+SECRET_KEY = os.environ.get("SECRET_KEY", "dev-only-insecure-key-change-in-prod")
 
 DB_PATH = os.environ.get("DB_PATH", os.path.join(tempfile.gettempdir(), "retroflix.db"))
 
@@ -147,21 +148,16 @@ def buscar():
     q = request.args.get("q", "")
     results = None
     error = None
-    query = None
     if q:
-        # !!! VULNERABLE: concatenacion directa del input del usuario !!!
-        query = (
-            "SELECT title, year, genre FROM movies "
-            "WHERE title LIKE '%" + q + "%'"
-        )
         db = get_db()
         try:
-            results = db.execute(query).fetchall()
+            results = db.execute(
+                "SELECT title, year, genre FROM movies WHERE title LIKE ?",
+                ("%" + q + "%",),
+            ).fetchall()
         except Exception as e:
             error = str(e)
-    return render_template(
-        "buscar.html", q=q, results=results, error=error, query=query
-    )
+    return render_template("buscar.html", q=q, results=results, error=error)
 
 
 # ---------------------------------------------------------------------------
@@ -199,8 +195,7 @@ def admin():
         "SELECT movie, author, body FROM reviews ORDER BY id DESC"
     ).fetchall()
     resp = make_response(render_template("admin.html", reviews=all_reviews))
-    # !!! VULNERABLE: cookie sensible accesible desde JavaScript (httponly=False) !!!
-    resp.set_cookie("admin_flag", FLAG_XSS, httponly=False, samesite="Lax")
+    resp.set_cookie("admin_flag", FLAG_XSS, httponly=True, samesite="Lax")
     return resp
 
 
@@ -225,49 +220,50 @@ def collect():
 # y se vuelve a codificar.
 # ---------------------------------------------------------------------------
 def make_license(premium=False):
-    payload = {"user": "guest", "premium": premium, "role": "user"}
-    return base64.b64encode(json.dumps(payload).encode()).decode()
+    payload = base64.b64encode(
+        json.dumps({"user": "guest", "premium": premium, "role": "user"}).encode()
+    ).decode()
+    sig = hmac.new(SECRET_KEY.encode(), payload.encode(), hashlib.sha256).hexdigest()
+    return f"{payload}.{sig}"
 
 
-def b64_decode_loose(token: str) -> bytes:
-    # Acepta base64 estandar o urlsafe y corrige el padding (para que sirva
-    # con cualquier herramienta online o `base64` de consola).
-    t = token.strip().replace("-", "+").replace("_", "/")
-    t += "=" * ((4 - len(t) % 4) % 4)
-    return base64.b64decode(t)
+def verify_license(token: str):
+    parts = token.split(".", 1)
+    if len(parts) != 2:
+        return None
+    payload_b64, sig = parts
+    expected = hmac.new(
+        SECRET_KEY.encode(), payload_b64.encode(), hashlib.sha256
+    ).hexdigest()
+    if not hmac.compare_digest(sig, expected):
+        return None
+    try:
+        padded = payload_b64 + "=" * ((4 - len(payload_b64) % 4) % 4)
+        return json.loads(base64.b64decode(padded))
+    except Exception:
+        return None
 
 
 @app.route("/premium")
 def premium():
     token = request.cookies.get("license")
 
-    # Si no hay token, se entrega uno de usuario gratuito (guest).
     if not token:
         token = make_license(premium=False)
         resp = make_response(redirect(url_for("premium")))
-        resp.set_cookie("license", token, samesite="Lax")
+        resp.set_cookie("license", token, httponly=True, samesite="Lax")
         return resp
 
-    status = None
-    is_premium = False
-    try:
-        decoded = b64_decode_loose(token).decode("utf-8", "replace")
-        status = decoded
-        data = json.loads(decoded)
-        val = data.get("premium")
-        is_premium = (val is True) or (str(val).strip().lower() == "true")
-    except Exception as e:
-        status = "Token con formato invalido: " + str(e)
+    data = verify_license(token)
+    if data is None:
+        token = make_license(premium=False)
+        resp = make_response(redirect(url_for("premium")))
+        resp.set_cookie("license", token, httponly=True, samesite="Lax")
+        return resp
 
+    is_premium = data.get("premium") is True
     flag = FLAG_CRYPTO if is_premium else None
-    return render_template(
-        "premium.html",
-        token=token,
-        is_premium=is_premium,
-        status=status,
-        flag=flag,
-        sample=make_license(premium=False),
-    )
+    return render_template("premium.html", is_premium=is_premium, flag=flag)
 
 
 if __name__ == "__main__":
