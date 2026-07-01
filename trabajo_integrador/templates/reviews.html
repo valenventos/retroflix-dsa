@@ -38,11 +38,15 @@
         <ol>
             <li>Publicá una reseña que incluya código capaz de ejecutarse en el
                 navegador de quien la abra.</li>
-            <li>Hacé que el administrador abra su panel de moderación, para que
-                ese código corra dentro de su sesión.</li>
-            <li>Tu código tiene que enviar la cookie del admin hacia algún lugar
-                que vos después puedas consultar.</li>
-            <li>Revisá ese lugar: ahí va a estar la cookie robada, con la flag.</li>
+            <li>Simulá que el administrador abre su panel entrando a
+                <a href="{{ url_for('admin') }}">/admin</a>: ahí tu código va a
+                correr dentro de la sesión del admin.</li>
+            <li>Tu código tiene que enviar la cookie del admin hacia
+                <a href="{{ url_for('collect') }}">/collect</a> (por ejemplo, como
+                parámetro <code>?c=</code>), que es donde vos podés leer lo que
+                llega.</li>
+            <li>Entrá a <a href="{{ url_for('collect') }}">/collect</a> para ver la
+                cookie robada: ahí está la flag.</li>
         </ol>
     </details>
 </details>
