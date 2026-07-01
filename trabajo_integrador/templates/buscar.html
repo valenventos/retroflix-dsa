@@ -10,16 +10,9 @@
     </form>
 </div>
 
-{% if query %}
-<div class="panel">
-    <p class="muted">Consulta ejecutada:</p>
-    <pre>{{ query }}</pre>
-</div>
-{% endif %}
-
 {% if error %}
 <div class="panel">
-    <p class="error">Error SQL: {{ error }}</p>
+    <p class="error">Error: {{ error }}</p>
 </div>
 {% endif %}
 
@@ -38,4 +31,9 @@
     {% endif %}
 </div>
 {% endif %}
+
+<details class="hint">
+    <summary>💡 Pista</summary>
+    <p><strong>Vulnerabilidad:</strong> SQL Injection.</p>
+</details>
 {% endblock %}

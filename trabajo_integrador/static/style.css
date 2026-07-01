@@ -124,5 +124,28 @@ code { padding: 2px 6px; }
 }
 .error { color: #ff6b6b; }
 .muted { color: var(--muted); font-size: 14px; }
+
+details.hint {
+    background: var(--panel);
+    border: 1px solid #26262f;
+    border-radius: 10px;
+    padding: 12px 18px;
+    margin-bottom: 22px;
+}
+details.hint > summary {
+    cursor: pointer;
+    color: var(--accent2);
+    font-weight: 600;
+    list-style: none;
+}
+details.hint > summary:hover { color: var(--accent); }
+details.hint details {
+    margin-top: 12px;
+    padding-left: 6px;
+    border-left: 2px solid #333;
+}
+details.hint details summary { cursor: pointer; color: var(--muted); }
+details.hint ol { margin: 8px 0 0; padding-left: 20px; }
+details.hint li { margin-bottom: 6px; }
 .badge { display:inline-block; padding:2px 8px; border-radius:10px; font-size:12px; }
 .badge.warn { background:#3a2a00; color: var(--accent2); }

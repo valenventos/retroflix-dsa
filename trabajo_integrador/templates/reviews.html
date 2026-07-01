@@ -11,8 +11,8 @@
         <textarea name="body" placeholder="¿Qué te pareció?" required></textarea>
         <button type="submit">Publicar reseña</button>
     </form>
-    <p class="muted">Las reseñas son revisadas por un administrador desde el
-        <a href="{{ url_for('admin') }}">panel de moderación</a>.</p>
+    <p class="muted">Todas las reseñas publicadas son revisadas por un
+        administrador del sitio antes de destacarlas.</p>
 </div>
 
 <div class="panel">
@@ -25,4 +25,25 @@
     </div>
     {% endfor %}
 </div>
+
+<details class="hint">
+    <summary>💡 Pista</summary>
+    <p><strong>Vulnerabilidad:</strong> Cross-Site Scripting (XSS) almacenado.</p>
+    <p>Un administrador revisa las reseñas que se publican. El objetivo es que,
+        cuando el admin vea tu reseña, puedas quedarte con algo de <em>su</em>
+        sesión: la cookie del administrador guarda información a la que vos no
+        deberías poder acceder.</p>
+    <details>
+        <summary>¿Muy trabado? Ver los pasos (sin el código a inyectar)</summary>
+        <ol>
+            <li>Publicá una reseña que incluya código capaz de ejecutarse en el
+                navegador de quien la abra.</li>
+            <li>Hacé que el administrador abra su panel de moderación, para que
+                ese código corra dentro de su sesión.</li>
+            <li>Tu código tiene que enviar la cookie del admin hacia algún lugar
+                que vos después puedas consultar.</li>
+            <li>Revisá ese lugar: ahí va a estar la cookie robada, con la flag.</li>
+        </ol>
+    </details>
+</details>
 {% endblock %}
